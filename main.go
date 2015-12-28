@@ -14,8 +14,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mmbros/go/gnucash-go-viewer/model"
-	gncxml "github.com/mmbros/go/gnucash-go-viewer/xml"
+	"github.com/mmbros/gnucash-viewer/model"
+	gncxml "github.com/mmbros/gnucash-viewer/xml"
 )
 
 var gnucashPath = flag.String("gnucash-file", "data/data.gnucash", "GnuCash file path")
@@ -44,11 +44,16 @@ func main() {
 	fmt.Printf("accounts: %d\n", len(book.Accounts.Map))
 	fmt.Printf("tansactions: %d\n", len(book.Transactions))
 
-	fmt.Printf("root: %v\n", book.Accounts.Root)
+	//fmt.Printf("root: %v\n", book.Accounts.Root)
 	//	book.Accounts.PrintTree("")
 
-	a := book.Accounts.Map["c623a615013986b49b88d391ce9fd0f1"]
-	for j, t := range a.Transactions {
-		fmt.Printf("%04d) %v %s\n", j, t.DatePosted, t.Description)
+	//a := book.Accounts.Map["c623a615013986b49b88d391ce9fd0f1"]
+	acc := book.Accounts.ByName("Multe")
+	if acc == nil {
+		panic("Account non trovato")
+	}
+
+	for j, t := range acc.Transactions {
+		fmt.Printf("%04d) %v %s\n", j+1, t.DatePosted, t.Description)
 	}
 }

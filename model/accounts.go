@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	gncxml "github.com/mmbros/go/gnucash-go-viewer/xml"
+	gncxml "github.com/mmbros/gnucash-viewer/xml"
 )
 
 // Accounts type
@@ -103,6 +103,14 @@ func newAccountsFromXML(xmlAccountList []gncxml.Account) (*Accounts, error) {
 	return a, nil
 }
 
+// used to sort each Account.children list
+type byAccountName []*Account
+
+func (a byAccountName) Len() int           { return len(a) }
+func (a byAccountName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byAccountName) Less(i, j int) bool { return strings.Compare(a[i].Name, a[j].Name) < 0 }
+
+// auxPrintTree is a PrintTree auxiliary function
 func auxPrintTree(act *Account, level int, indent string) {
 	fmt.Printf("%s[%s] %s (%s)\n", strings.Repeat(indent, level), strings.ToUpper(act.Type.label), act.Name, act.Currency)
 
@@ -125,9 +133,12 @@ func (a *Accounts) PrintTree(indent string) {
 	auxPrintTree(a.Root, 0, indent)
 }
 
-// used to sort each Account.children list
-type byAccountName []*Account
-
-func (a byAccountName) Len() int           { return len(a) }
-func (a byAccountName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byAccountName) Less(i, j int) bool { return strings.Compare(a[i].Name, a[j].Name) < 0 }
+// ByName return the account with the given name
+func (a *Accounts) ByName(name string) *Account {
+	for _, acc := range a.Map {
+		if acc.Name == name {
+			return acc
+		}
+	}
+	return nil
+}

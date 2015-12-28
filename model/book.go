@@ -3,7 +3,7 @@ package model
 import (
 	"errors"
 
-	gncxml "github.com/mmbros/go/gnucash-go-viewer/xml"
+	gncxml "github.com/mmbros/gnucash-viewer/xml"
 )
 
 // Book type

@@ -6,7 +6,7 @@ import (
 	"sort"
 	"time"
 
-	gncxml "github.com/mmbros/go/gnucash-go-viewer/xml"
+	gncxml "github.com/mmbros/gnucash-viewer/xml"
 )
 
 // Transactions type
