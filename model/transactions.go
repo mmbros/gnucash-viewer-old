@@ -128,14 +128,33 @@ func newTransactionsFromXML(xmlTransactionList []gncxml.Transaction, accounts *A
 	// step 2: sort Transactions by DatePosted
 	sort.Sort(byDatePosted(transactions))
 
-	// step 3: update each Account.transactions field
-	// the Account.transactions will be already ordered by DatePosted
+	// step 3: update each Account.AccountTransactionList field
+	// the Account.AccountTransactionList will be already ordered by DatePosted
 	for _, t := range transactions {
 		for _, s := range t.Splits {
 			a := s.Account
-			a.Transactions = append(a.Transactions, t)
+			at := AccountTransaction{Transaction: t, Split: s}
+			a.AccountTransactionList = append(a.AccountTransactionList, at)
 		}
+	}
+	// initialize account balance
+	for _, a := range accounts.Map {
+		balance := *GncNumericZero
+		for _, at := range a.AccountTransactionList {
 
+			v := at.Split.Value
+			balance.Add(&v)
+			at.Balance = balance
+			if v.Sign() >= 0 {
+				at.PlusValue = v
+				at.MinusValue = *GncNumericZero
+			} else {
+				v.Neg()
+				at.PlusValue = *GncNumericZero
+				at.MinusValue = v
+			}
+		}
+		a.Balance = balance
 	}
 
 	return transactions, nil

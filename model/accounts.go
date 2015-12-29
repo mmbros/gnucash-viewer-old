@@ -17,14 +17,24 @@ type Accounts struct {
 
 // Account type
 type Account struct {
-	ID           string
-	Type         *AccountType
-	Name         string
-	Description  string
-	Currency     string
-	Parent       *Account
-	Children     []*Account
-	Transactions []*Transaction
+	ID                     string
+	Type                   *AccountType
+	Name                   string
+	Description            string
+	Currency               string
+	Parent                 *Account
+	Children               []*Account
+	AccountTransactionList []AccountTransaction
+	Balance                GncNumeric
+}
+
+// AccountTransaction type
+type AccountTransaction struct {
+	Transaction *Transaction
+	Split       *Split
+	PlusValue   GncNumeric
+	MinusValue  GncNumeric
+	Balance     GncNumeric
 }
 
 func newAccountFromXML(xmlAccount *gncxml.Account) (*Account, error) {

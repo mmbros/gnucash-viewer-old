@@ -30,6 +30,20 @@ func timeTrack(start time.Time, name string) {
 func main() {
 	defer timeTrack(time.Now(), "task duration:")
 
+	a := model.NewNumeric(3, -10)
+	b := model.NewNumeric(1, 4)
+	fmt.Printf("a = %s\n", a)
+	fmt.Printf("b = %s\n", b)
+	a.Sub(b)
+	fmt.Printf("a -= b\n")
+	fmt.Printf("a = %s\n", a)
+	fmt.Printf("b = %s\n", b)
+
+}
+
+func main2() {
+	defer timeTrack(time.Now(), "task duration:")
+
 	gnc, err := gncxml.ReadFile(*gnucashPath)
 	if err != nil {
 		panic(err)
@@ -47,13 +61,26 @@ func main() {
 	//fmt.Printf("root: %v\n", book.Accounts.Root)
 	//	book.Accounts.PrintTree("")
 
+	var tot int
+	for _, t := range book.Transactions {
+		if len(t.Splits) <= 2 {
+			continue
+		}
+		tot++
+		fmt.Printf("%03d) transaction.ID = %s\n", tot, t.ID)
+		for _, s := range t.Splits {
+			fmt.Printf("    %s %v\n", s.Account.Name, s.Value)
+		}
+	}
+
 	//a := book.Accounts.Map["c623a615013986b49b88d391ce9fd0f1"]
 	acc := book.Accounts.ByName("Multe")
 	if acc == nil {
 		panic("Account non trovato")
 	}
-
-	for j, t := range acc.Transactions {
-		fmt.Printf("%04d) %v %s\n", j+1, t.DatePosted, t.Description)
-	}
+	/*
+		for j, t := range acc.Transactions {
+			fmt.Printf("%04d) %v %s\n", j+1, t.DatePosted, t.Description)
+		}
+	*/
 }
