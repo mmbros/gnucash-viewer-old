@@ -1,7 +1,6 @@
-package model
+package numeric
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -11,77 +10,54 @@ import (
 type numint int64
 
 // Numeric type
+// if den == 0 then the numeric is 0
+// den is always >= 0
 type Numeric struct {
 	num numint
 	den numint
 }
 
-var (
-	// Numeric0 represents numeric 0
-	Numeric0 = Numeric{num: 0, den: 100}
-
-	// Numeric1 represents numeric 1
-	Numeric1 = Numeric{num: 100, den: 100}
-)
-
 // String returns a string representation of Numeric
 func (z Numeric) String() string {
-	if z.den == 0 {
-		if z.num == 0 {
-			return "NaN"
-		}
-		if z.num > 0 {
-			return "+Inf"
-		}
-		return "-Inf"
+	switch z.den {
+	case 0: // den == 0
+		return "0"
+	case 1: // den == 1
+		return strconv.FormatInt(int64(z.num), 10)
+	default:
+		//return fmt.Sprintf("%.02f", float64(z.num)/float64(z.den))
+		return fmt.Sprintf("%d/%d", z.num, z.den)
 	}
-	// den != 0
-	return fmt.Sprintf("%.02f", float64(z.num)/float64(z.den))
-	//return fmt.Sprintf("%d/%d", z.num, z.den)
 }
 
-// NewNumeric creates a new numeric with numerator num and denominator den.
-func NewNumeric(num, den numint) Numeric {
-	/*
-		if den == 0 {
-			return panic("Division by 0")
-		}
-	*/
+// New creates a new numeric with numerator num and denominator den.
+func New(num, den numint) Numeric {
 	if den < 0 {
 		num, den = -num, -den
 	}
 	return Numeric{num: num, den: den}
 }
 
-// NewNumericFromString creates a new Numeric from string
-func NewNumericFromString(v string) (Numeric, error) {
+// FromString creates a new Numeric from string
+func FromString(v string) (Numeric, error) {
 	var z Numeric
-	err := z.FromString(v)
-	return z, err
-}
-
-// FromString initialize Numeric from string
-func (z *Numeric) FromString(v string) error {
 
 	idx := strings.IndexByte(v, '/')
 	if idx < 0 {
 		num1, err := _atoi(v)
 		if err != nil {
-			return err
+			return z, err
 		}
 		z.num = num1
 		z.den = 1
 	} else {
 		num1, err := _atoi(v[0:idx])
 		if err != nil {
-			return err
+			return z, err
 		}
 		den1, err := _atoi(v[idx+1:])
 		if err != nil {
-			return err
-		}
-		if den1 == 0 {
-			return errors.New("Division by 0")
+			return z, err
 		}
 		if den1 < 0 {
 			num1, den1 = -num1, -den1
@@ -89,49 +65,52 @@ func (z *Numeric) FromString(v string) error {
 		z.num = num1
 		z.den = den1
 	}
-	return nil
+	return z, nil
 }
 
 // Sign returns:
 //
 //	-1 if z <  0
-//	 0 if z == 0 (or z == -Inf, NaN, +Inf)
+//	 0 if z == 0
 //	+1 if z >  0
 //
 func (z *Numeric) Sign() int {
-	if z.den > 0 {
-		if z.num > 0 {
-			return 1
-		}
-		if z.num == 0 {
-			return 0
-		}
-		return -1
+	if z.den == 0 {
+		return 0
 	}
-
-	if z.den < 0 {
-		if z.num > 0 {
-			return -1
-		}
-		if z.num == 0 {
-			return 0
-		}
+	// assert(den > 0)
+	if z.num > 0 {
 		return 1
 	}
-
-	// den == 0
-	return 0
+	if z.num == 0 {
+		return 0
+	}
+	return -1
 }
 
-// Neg sets n to -n
-func (z *Numeric) Neg() {
+// NegEqual sets z to -z
+func (z *Numeric) NegEqual() {
 	z.num = -z.num
 }
 
-// Add function: n.Add(x) -> n += x
-func (z *Numeric) Add(x Numeric) {
+// AddEqual function: z.AddEqual(x) -> z += x
+func (z *Numeric) AddEqual(x *Numeric) {
+
+	if x.den == 0 {
+		// z += 0
+		return
+	}
+	if z.den == 0 {
+		// 0 += x
+		z.num = x.num
+		z.den = x.den
+		return
+	}
 	if z.den == x.den {
 		z.num += x.num
+		return
+	}
+	if x.den == 0 {
 		return
 	}
 	g := _lcm(z.den, x.den)
@@ -139,15 +118,29 @@ func (z *Numeric) Add(x Numeric) {
 	z.den = g
 }
 
-// Sub function: n.Sub(x) -> n -= x
-func (z *Numeric) Sub(x Numeric) {
-	if z.den == x.den {
-		z.num -= x.num
-		return
-	}
-	g := _lcm(z.den, x.den)
-	z.num = z.num*(g/z.den) - x.num*(g/x.den)
-	z.den = g
+// SubEqual function: z.SubEqual(x) -> z -= x
+func (z *Numeric) SubEqual(x *Numeric) {
+	y := Neg(x)
+	z.AddEqual(&y)
+}
+
+// Add function
+func Add(x *Numeric, y *Numeric) Numeric {
+	z := *x
+	z.AddEqual(y)
+	return z
+}
+
+// Sub function
+func Sub(x *Numeric, y *Numeric) Numeric {
+	z := *x
+	z.SubEqual(y)
+	return z
+}
+
+// Neg function
+func Neg(x *Numeric) Numeric {
+	return Numeric{num: -x.num, den: x.den}
 }
 
 //*************************************************************

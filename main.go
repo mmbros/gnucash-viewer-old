@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/mmbros/gnucash-viewer/model"
+	"github.com/mmbros/gnucash-viewer/numeric"
 	gncxml "github.com/mmbros/gnucash-viewer/xml"
 )
 
@@ -27,21 +28,24 @@ func timeTrack(start time.Time, name string) {
 	fmt.Printf("\n--\nfunction %s took %v\n", name, elapsed)
 }
 
-func main() {
+func main2() {
 	defer timeTrack(time.Now(), "task duration:")
 
-	a := model.NewNumeric(3, -10)
-	b := model.NewNumeric(1, 4)
+	a := numeric.New(-3, -2)
+	b := numeric.New(5, -7)
+	z := numeric.Numeric{}
 	fmt.Printf("a = %s\n", a)
 	fmt.Printf("b = %s\n", b)
-	a.Sub(b)
-	fmt.Printf("a -= b\n")
+	fmt.Printf("z = %s\n", z)
+	z = numeric.Sub(&a, &b)
+	fmt.Printf("z = a-b\n")
 	fmt.Printf("a = %s\n", a)
 	fmt.Printf("b = %s\n", b)
+	fmt.Printf("z = %s\n", z)
 
 }
 
-func main2() {
+func main() {
 	defer timeTrack(time.Now(), "task duration:")
 
 	gnc, err := gncxml.ReadFile(*gnucashPath)

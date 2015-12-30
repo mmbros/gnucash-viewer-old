@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/mmbros/gnucash-viewer/numeric"
 	gncxml "github.com/mmbros/gnucash-viewer/xml"
 )
 
@@ -25,16 +26,16 @@ type Account struct {
 	Parent                 *Account
 	Children               []*Account
 	AccountTransactionList []AccountTransaction
-	Balance                GncNumeric
+	Balance                numeric.Numeric
 }
 
 // AccountTransaction type
 type AccountTransaction struct {
 	Transaction *Transaction
 	Split       *Split
-	PlusValue   GncNumeric
-	MinusValue  GncNumeric
-	Balance     GncNumeric
+	PlusValue   numeric.Numeric
+	MinusValue  numeric.Numeric
+	Balance     numeric.Numeric
 }
 
 func newAccountFromXML(xmlAccount *gncxml.Account) (*Account, error) {

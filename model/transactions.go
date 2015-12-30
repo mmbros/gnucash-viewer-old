@@ -6,6 +6,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/mmbros/gnucash-viewer/numeric"
 	gncxml "github.com/mmbros/gnucash-viewer/xml"
 )
 
@@ -27,8 +28,8 @@ type Split struct {
 	ID              string
 	ReconciledState string
 	ReconcileDate   time.Time
-	Value           GncNumeric
-	Quantity        GncNumeric
+	Value           numeric.Numeric
+	Quantity        numeric.Numeric
 	Account         *Account
 }
 
@@ -50,12 +51,12 @@ func newSplitFromXML(xmlSplit *gncxml.Split, accounts *Accounts) (*Split, error)
 		return nil, formatError("Split", "ReconcileDate", xmlSplit.ID, err)
 	}
 	// check Value
-	value, err := NewGncNumericFromString(xmlSplit.Value)
+	value, err := numeric.FromString(xmlSplit.Value)
 	if err != nil {
 		return nil, formatError("Split", "Value", xmlSplit.ID, err)
 	}
 	// check Quantity
-	quantity, err := NewGncNumericFromString(xmlSplit.Quantity)
+	quantity, err := numeric.FromString(xmlSplit.Quantity)
 	if err != nil {
 		return nil, formatError("Split", "Quantity", xmlSplit.ID, err)
 	}
@@ -70,8 +71,8 @@ func newSplitFromXML(xmlSplit *gncxml.Split, accounts *Accounts) (*Split, error)
 		ID:              xmlSplit.ID,
 		ReconciledState: xmlSplit.ReconciledState,
 		ReconcileDate:   reconcileDate,
-		Value:           *value,
-		Quantity:        *quantity,
+		Value:           value,
+		Quantity:        quantity,
 		Account:         account,
 	}
 
@@ -139,18 +140,16 @@ func newTransactionsFromXML(xmlTransactionList []gncxml.Transaction, accounts *A
 	}
 	// initialize account balance
 	for _, a := range accounts.Map {
-		balance := *GncNumericZero
+		var balance numeric.Numeric
 		for _, at := range a.AccountTransactionList {
 
 			v := at.Split.Value
-			balance.Add(&v)
+			balance.AddEqual(&v)
 			at.Balance = balance
 			if v.Sign() >= 0 {
 				at.PlusValue = v
-				at.MinusValue = *GncNumericZero
 			} else {
-				v.Neg()
-				at.PlusValue = *GncNumericZero
+				v.NegEqual()
 				at.MinusValue = v
 			}
 		}
