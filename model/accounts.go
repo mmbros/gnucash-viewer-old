@@ -25,8 +25,7 @@ type Account struct {
 	Currency               string
 	Parent                 *Account
 	Children               []*Account
-	AccountTransactionList []AccountTransaction
-	Balance                numeric.Numeric
+	AccountTransactionList []*AccountTransaction
 }
 
 // AccountTransaction type
@@ -131,25 +130,70 @@ func auxPrintTree(act *Account, level int, indent string) {
 }
 
 // PrintTree prints account tree
-func (a *Accounts) PrintTree(indent string) {
+func (accounts *Accounts) PrintTree(indent string) {
 	if indent == "" {
 		indent = "  "
 	}
 
-	if (a == nil) || (a.Root == nil) {
+	if (accounts == nil) || (accounts.Root == nil) {
 		fmt.Println("<nil>")
 		return
 	}
 
-	auxPrintTree(a.Root, 0, indent)
+	auxPrintTree(accounts.Root, 0, indent)
 }
 
 // ByName return the account with the given name
-func (a *Accounts) ByName(name string) *Account {
-	for _, acc := range a.Map {
+func (accounts *Accounts) ByName(name string) *Account {
+	for _, acc := range accounts.Map {
 		if acc.Name == name {
 			return acc
 		}
 	}
 	return nil
+}
+
+// Balance returns the balance of the account
+func (a *Account) Balance() numeric.Numeric {
+	return a.AccountTransactionList[len(a.AccountTransactionList)-1].Balance
+}
+
+func (accounts *Accounts) postInit(transactions Transactions) {
+	// update each Account.AccountTransactionList field
+	// the Account.AccountTransactionList will be already ordered by DatePosted
+	for _, t := range transactions {
+		for _, s := range t.Splits {
+			at := AccountTransaction{Transaction: t, Split: s}
+			a := s.Account
+			a.AccountTransactionList = append(a.AccountTransactionList, &at)
+		}
+	}
+	// initialize account balance
+	for _, a := range accounts.Map {
+		var balance numeric.Numeric
+		for _, at := range a.AccountTransactionList {
+
+			v := at.Split.Value
+			balance.AddEqual(&v)
+			at.Balance.Set(&balance)
+
+			if v.Sign() >= 0 {
+				at.PlusValue.Set(&v)
+			} else {
+				v.NegEqual()
+				at.MinusValue.Set(&v)
+			}
+		}
+	}
+}
+
+// Description returns Split.Memo if not null, else Transaction.Description.
+func (at *AccountTransaction) Description() string {
+	if at == nil || at.Transaction == nil {
+		return "<nil>"
+	}
+	if at.Split != nil && len(at.Split.Memo) > 0 {
+		return at.Split.Memo
+	}
+	return at.Transaction.Description
 }

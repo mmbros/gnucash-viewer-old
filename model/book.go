@@ -41,5 +41,8 @@ func NewBook(gnc *gncxml.Gnc) (*Book, error) {
 		return nil, err
 	}
 
+	// post-init Accounts
+	book.Accounts.postInit(book.Transactions)
+
 	return &book, nil
 }

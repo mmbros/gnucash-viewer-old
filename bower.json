@@ -1,0 +1,23 @@
+{
+  "name": "gnucash-viewer",
+  "homepage": "https://github.com/mmbros/gnucash-viewer",
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "Chart.js": "~1.0.2",
+    "chartist": "~0.9.5",
+    "chartist-plugin-tooltip": "~0.0.12",
+    "d3": "~3.5.12",
+    "highcharts": "~4.2.1",
+    "nvd3": "~1.8.1"
+  }
+}

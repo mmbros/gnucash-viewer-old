@@ -12,6 +12,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mmbros/gnucash-viewer/model"
@@ -45,6 +46,29 @@ func main2() {
 
 }
 
+// StringLeft function
+func StringLeft(s string, n int) string {
+	if n <= 0 {
+		return ""
+	}
+	if L := len([]rune(s)); L < n {
+		n = L
+	}
+	return s[:n]
+}
+
+// StringPad function
+func StringPad(s string, n int, pad string) string {
+	if n <= 0 {
+		return ""
+	}
+	L := len([]rune(s))
+	if L >= n {
+		return s[:n]
+	}
+	return s + strings.Repeat(pad, n-L)
+}
+
 func main() {
 	defer timeTrack(time.Now(), "task duration:")
 
@@ -65,26 +89,45 @@ func main() {
 	//fmt.Printf("root: %v\n", book.Accounts.Root)
 	//	book.Accounts.PrintTree("")
 
-	var tot int
-	for _, t := range book.Transactions {
-		if len(t.Splits) <= 2 {
-			continue
+	/*
+		var tot int
+		for _, t := range book.Transactions {
+			if len(t.Splits) <= 2 {
+				continue
+			}
+			tot++
+			fmt.Printf("%03d) transaction.ID = %s\n", tot, t.ID)
+			for _, s := range t.Splits {
+				fmt.Printf("    %s %v\n", s.Account.Name, s.Value)
+			}
 		}
-		tot++
-		fmt.Printf("%03d) transaction.ID = %s\n", tot, t.ID)
-		for _, s := range t.Splits {
-			fmt.Printf("    %s %v\n", s.Account.Name, s.Value)
-		}
-	}
+	*/
 
 	//a := book.Accounts.Map["c623a615013986b49b88d391ce9fd0f1"]
-	acc := book.Accounts.ByName("Multe")
+	acc := book.Accounts.ByName("Stipendio")
 	if acc == nil {
 		panic("Account non trovato")
 	}
+	for j, at := range acc.AccountTransactionList {
+		fmt.Printf("%02d) %s %s %5.2f %7.2f %7.0f\n",
+			j+1,
+			at.Transaction.DatePosted.Format("2006-01-02"),
+			StringPad(at.Description(), 41, "."),
+			at.PlusValue.Float64(),
+			at.MinusValue.Float64(),
+			at.Balance.Float64(),
+		)
+	}
+
+	for _, at := range acc.AccountTransactionList {
+		fmt.Printf("'%s', %4.0f\n",
+			at.Description()[21:],
+			at.MinusValue.Float64(),
+		)
+	}
 	/*
-		for j, t := range acc.Transactions {
-			fmt.Printf("%04d) %v %s\n", j+1, t.DatePosted, t.Description)
+		for j, at := range acc.AccountTransactionList {
+			fmt.Printf("%01d) %v\n", j+1, at)
 		}
 	*/
 }

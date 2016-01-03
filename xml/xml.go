@@ -47,6 +47,7 @@ type Split struct {
 	ReconciledState string `xml:"reconciled-state"`
 	ReconcileDate   string `xml:"reconcile-date>date"`
 	Value           string `xml:"value"`
+	Memo            string `xml:"memo"`
 	Quantity        string `xml:"quantity"`
 	AccountID       string `xml:"account"`
 }

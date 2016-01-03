@@ -29,6 +29,7 @@ type Split struct {
 	ReconciledState string
 	ReconcileDate   time.Time
 	Value           numeric.Numeric
+	Memo            string
 	Quantity        numeric.Numeric
 	Account         *Account
 }
@@ -72,6 +73,7 @@ func newSplitFromXML(xmlSplit *gncxml.Split, accounts *Accounts) (*Split, error)
 		ReconciledState: xmlSplit.ReconciledState,
 		ReconcileDate:   reconcileDate,
 		Value:           value,
+		Memo:            xmlSplit.Memo,
 		Quantity:        quantity,
 		Account:         account,
 	}
@@ -128,33 +130,6 @@ func newTransactionsFromXML(xmlTransactionList []gncxml.Transaction, accounts *A
 
 	// step 2: sort Transactions by DatePosted
 	sort.Sort(byDatePosted(transactions))
-
-	// step 3: update each Account.AccountTransactionList field
-	// the Account.AccountTransactionList will be already ordered by DatePosted
-	for _, t := range transactions {
-		for _, s := range t.Splits {
-			a := s.Account
-			at := AccountTransaction{Transaction: t, Split: s}
-			a.AccountTransactionList = append(a.AccountTransactionList, at)
-		}
-	}
-	// initialize account balance
-	for _, a := range accounts.Map {
-		var balance numeric.Numeric
-		for _, at := range a.AccountTransactionList {
-
-			v := at.Split.Value
-			balance.AddEqual(&v)
-			at.Balance = balance
-			if v.Sign() >= 0 {
-				at.PlusValue = v
-			} else {
-				v.NegEqual()
-				at.MinusValue = v
-			}
-		}
-		a.Balance = balance
-	}
 
 	return transactions, nil
 }

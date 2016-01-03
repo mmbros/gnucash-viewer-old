@@ -68,6 +68,11 @@ func FromString(v string) (Numeric, error) {
 	return z, nil
 }
 
+// Set sets z to the value of x.
+func (z *Numeric) Set(x *Numeric) {
+	z.num, z.den = x.num, x.den
+}
+
 // Sign returns:
 //
 //	-1 if z <  0
@@ -141,6 +146,14 @@ func Sub(x *Numeric, y *Numeric) Numeric {
 // Neg function
 func Neg(x *Numeric) Numeric {
 	return Numeric{num: -x.num, den: x.den}
+}
+
+// Float64 function
+func (z *Numeric) Float64() float64 {
+	if z.num == 0 || z.den == 0 {
+		return 0.0
+	}
+	return float64(z.num) / float64(z.den)
 }
 
 //*************************************************************
