@@ -36,14 +36,13 @@ func gcd(a, b numint) numint {
 //   lcm(a, 0) -> 0
 //   lcm(0, b) -> 0
 func lcm(a, b numint) numint {
-	if a == 0 && b == 0 {
+	if a == 0 || b == 0 {
 		return 0
 	}
 	a = abs(a)
 	b = abs(b)
 	g := gcd(a, b)
 	l := (a / g) * b
-	//	fmt.Printf("lcm(%d, %d) = %d\n", a, b, l)
 
 	return l
 }

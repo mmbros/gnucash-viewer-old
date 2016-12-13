@@ -57,3 +57,11 @@ func TestLcm(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkLcm(b *testing.B) {
+	const x = numint(2 * 5 * 11 * 17 * 72329872398)
+	const y = numint(4 * 3 * 7 * 13 * 38837)
+	for n := 0; n < b.N; n++ {
+		_ = lcm(x, y)
+	}
+}

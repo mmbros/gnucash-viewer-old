@@ -28,9 +28,9 @@ type Split struct {
 	ID              string
 	ReconciledState string
 	ReconcileDate   time.Time
-	Value           numeric.Numeric
+	Value           *numeric.Numeric
 	Memo            string
-	Quantity        numeric.Numeric
+	Quantity        *numeric.Numeric
 	Account         *Account
 }
 

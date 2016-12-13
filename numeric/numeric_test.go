@@ -18,7 +18,7 @@ func TestNew(t *testing.T) {
 		}
 	}
 }
-func TestZero(t *testing.T) {
+func TestIsZero(t *testing.T) {
 	var testCases = []struct {
 		num, den numint
 		expected bool
@@ -31,25 +31,25 @@ func TestZero(t *testing.T) {
 
 	for _, tc := range testCases {
 		z := New(tc.num, tc.den)
-		actual := z.Zero()
+		actual := z.IsZero()
 		if actual != tc.expected {
-			t.Errorf("Zero: num=%d, den=%d, expected %v, got %v", tc.num, tc.den, tc.expected, actual)
+			t.Errorf("IsZero: num=%d, den=%d, expected %v, got %v", tc.num, tc.den, tc.expected, actual)
 		}
 	}
 }
 func TestEqual(t *testing.T) {
 	var testCases = []struct {
-		a, b     Numeric
+		a, b     *Numeric
 		expected bool
 	}{
-		{Numeric{1, 1}, Numeric{1, 1}, true},
-		{Numeric{1, 1}, Numeric{5, 5}, false},
-		{Numeric{0, 1}, Numeric{1, 0}, true},
+		{New(1, 1), New(1, 1), true},
+		{New(1, 1), New(5, 5), false},
+		{New(0, 1), New(1, 0), true},
 		{New(-1, 2), New(1, -2), true},
 	}
 
 	for _, tc := range testCases {
-		actual := tc.a.Equal(&tc.b)
+		actual := tc.a.Equals(tc.b)
 		if actual != tc.expected {
 			t.Errorf("Equal: %s == %s, expected %v, got %v", tc.a, tc.b, tc.expected, actual)
 		}
@@ -68,6 +68,8 @@ func TestString(t *testing.T) {
 		{-10, -1, "10"},
 		{5, 0, "0"},
 		{0, 0, "0"},
+		{0, 1, "0"},
+		{0, 9, "0"},
 		{-5, 0, "0"},
 		{250, 100, "250/100"},
 		{-250, 100, "-250/100"},
@@ -110,7 +112,7 @@ func TestFromString(t *testing.T) {
 		}
 		expected := New(tc.num, tc.den)
 
-		if !actual.Equal(&expected) {
+		if !actual.Equals(expected) {
 			t.Errorf("FromString(%q): expected %q, got %q", tc.str, expected, actual)
 		}
 
@@ -119,18 +121,58 @@ func TestFromString(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	var testCases = []struct {
-		a, b     Numeric
-		expected Numeric
+		a, b     *Numeric
+		expected *Numeric
 	}{
 		{New(150, 100), New(250, 100), New(400, 100)},
 		{New(1, 2), New(1, 3), New(5, 6)},
 		{New(1, 2), New(5, 10), New(10, 10)},
+		{New(-1, 2), New(-1, -3), New(-1, 6)},
 	}
 
 	for _, tc := range testCases {
-		actual := Add(&tc.a, &tc.b)
-		if !actual.Equal(&tc.expected) {
+		actual := Add(tc.a, tc.b)
+		if !actual.Equals(tc.expected) {
 			t.Errorf("Add: %s + %s, expected %v, got %v", tc.a, tc.b, tc.expected, actual)
+		}
+	}
+}
+
+func TestAddEqual(t *testing.T) {
+	var testCases = []struct {
+		a, b     *Numeric
+		expected *Numeric
+	}{
+		{New(150, 100), New(250, 100), New(400, 100)},
+		{New(1, 2), New(1, 3), New(5, 6)},
+		{New(1, 2), New(5, 10), New(10, 10)},
+		{New(-1, 2), New(-1, -3), New(-1, 6)},
+	}
+
+	for _, tc := range testCases {
+		actual := Copy(tc.a)
+		actual.AddEqual(tc.b)
+		if !actual.Equals(tc.expected) {
+			t.Errorf("AddEqual: %s += %s, expected %v, got %v", tc.a, tc.b, tc.expected, actual)
+		}
+	}
+}
+
+func TestSub(t *testing.T) {
+	var testCases = []struct {
+		a, b     *Numeric
+		expected *Numeric
+	}{
+		{New(150, 100), New(250, 100), New(-100, 100)},
+		{New(1, 2), New(1, 3), New(1, 6)},
+		{New(1, 2), New(5, 10), New(0, 10)},
+		{New(-1, 2), New(-1, -3), New(-5, 6)},
+	}
+
+	for _, tc := range testCases {
+		actual := Sub(tc.a, tc.b)
+		if !actual.Equals(tc.expected) {
+			t.Errorf("Neg: %s - %s, expected %v, got %v", tc.a, tc.b, tc.expected, actual)
 		}
 	}
 }

@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/mmbros/gnucash-viewer/model"
-	"github.com/mmbros/gnucash-viewer/numeric"
 	gncxml "github.com/mmbros/gnucash-viewer/xml"
 )
 
@@ -27,23 +26,6 @@ var gnucashPath = flag.String("gnucash-file", "data/data.gnucash", "GnuCash file
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
 	fmt.Printf("\n--\nfunction %s took %v\n", name, elapsed)
-}
-
-func main2() {
-	defer timeTrack(time.Now(), "task duration:")
-
-	a := numeric.New(-3, -2)
-	b := numeric.New(5, -7)
-	z := numeric.Numeric{}
-	fmt.Printf("a = %s\n", a)
-	fmt.Printf("b = %s\n", b)
-	fmt.Printf("z = %s\n", z)
-	z = numeric.Sub(&a, &b)
-	fmt.Printf("z = a-b\n")
-	fmt.Printf("a = %s\n", a)
-	fmt.Printf("b = %s\n", b)
-	fmt.Printf("z = %s\n", z)
-
 }
 
 // StringLeft function
@@ -112,22 +94,11 @@ func main() {
 		fmt.Printf("%02d) %s %s %5.2f %7.2f %7.0f\n",
 			j+1,
 			at.Transaction.DatePosted.Format("2006-01-02"),
-			StringPad(at.Description(), 41, "."),
+			StringPad(at.Description(), 65, "."),
 			at.PlusValue.Float64(),
 			at.MinusValue.Float64(),
 			at.Balance.Float64(),
 		)
 	}
 
-	for _, at := range acc.AccountTransactionList {
-		fmt.Printf("'%s', %4.0f\n",
-			at.Description()[21:],
-			at.MinusValue.Float64(),
-		)
-	}
-	/*
-		for j, at := range acc.AccountTransactionList {
-			fmt.Printf("%01d) %v\n", j+1, at)
-		}
-	*/
 }

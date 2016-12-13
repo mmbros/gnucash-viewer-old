@@ -174,14 +174,14 @@ func (accounts *Accounts) postInit(transactions Transactions) {
 		for _, at := range a.AccountTransactionList {
 
 			v := at.Split.Value
-			balance.AddEqual(&v)
-			at.Balance.Set(&balance)
+			balance.AddEqual(v)
+			at.Balance.Copy(&balance)
 
 			if v.Sign() >= 0 {
-				at.PlusValue.Set(&v)
+				at.PlusValue.Copy(v)
 			} else {
 				v.NegEqual()
-				at.MinusValue.Set(&v)
+				at.MinusValue.Copy(v)
 			}
 		}
 	}
