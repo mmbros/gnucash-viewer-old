@@ -12,93 +12,55 @@ package main
 import (
 	"flag"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/mmbros/gnucash-viewer/model"
-	gncxml "github.com/mmbros/gnucash-viewer/xml"
 )
 
 var gnucashPath = flag.String("gnucash-file", "data/data.gnucash", "GnuCash file path")
 
-// --------------------------------------------------------------------------
-
-func timeTrack(start time.Time, name string) {
-	elapsed := time.Since(start)
-	fmt.Printf("\n--\nfunction %s took %v\n", name, elapsed)
-}
-
-// StringLeft function
-func StringLeft(s string, n int) string {
-	if n <= 0 {
-		return ""
-	}
-	if L := len([]rune(s)); L < n {
-		n = L
-	}
-	return s[:n]
-}
-
-// StringPad function
-func StringPad(s string, n int, pad string) string {
-	if n <= 0 {
-		return ""
-	}
-	L := len([]rune(s))
-	if L >= n {
-		return s[:n]
-	}
-	return s + strings.Repeat(pad, n-L)
-}
-
 func main() {
 	defer timeTrack(time.Now(), "task duration:")
 
-	gnc, err := gncxml.ReadFile(*gnucashPath)
+	gnc, err := model.ReadFile(*gnucashPath)
+
 	if err != nil {
 		panic(err)
 	}
 
-	book, err := model.NewBook(gnc)
-	if err != nil {
-		panic(err)
+	book := gnc.Book
+
+	fmt.Printf("Commodites   (1)   : %d\n", book.Commodities.Len())
+	fmt.Printf("Accounts     (161) : %d\n", book.Accounts.Len())
+	fmt.Printf("Transactions (2553): %d\n", book.Transactions.Len())
+	fmt.Println("")
+
+	for j, cmdty := range book.Commodities {
+		fmt.Printf("*** COMMODITY #%d ***\n", j)
+		fmt.Printf("ID: %s\n", cmdty.ID)
+		fmt.Printf("Space: %s\n", cmdty.Space)
+		fmt.Printf("Name: %s\n", cmdty.Name)
+		fmt.Printf("Xcode: %s\n", cmdty.Xcode)
+		fmt.Printf("Fraction: %s\n", cmdty.Fraction)
 	}
 
-	fmt.Printf("books: %d\n", len(gnc.Books))
-	fmt.Printf("accounts: %d\n", len(book.Accounts.Map))
-	fmt.Printf("tansactions: %d\n", len(book.Transactions))
+	fmt.Println("")
 
-	//fmt.Printf("root: %v\n", book.Accounts.Root)
-	//	book.Accounts.PrintTree("")
-
-	/*
-		var tot int
-		for _, t := range book.Transactions {
-			if len(t.Splits) <= 2 {
-				continue
-			}
-			tot++
-			fmt.Printf("%03d) transaction.ID = %s\n", tot, t.ID)
-			for _, s := range t.Splits {
-				fmt.Printf("    %s %v\n", s.Account.Name, s.Value)
-			}
+	for j, a := range book.Accounts.List {
+		if j >= 10 {
+			break
 		}
-	*/
+		fmt.Printf("%3d) %v %s\n", j+1, a, a.Currency.ID)
+	}
 
-	//a := book.Accounts.Map["c623a615013986b49b88d391ce9fd0f1"]
-	acc := book.Accounts.ByName("Stipendio")
-	if acc == nil {
-		panic("Account non trovato")
+	fmt.Println("")
+
+	for j, t := range book.Transactions {
+		if j >= 10 {
+			break
+		}
+		fmt.Printf("%3d) %s - splits=%d\n", j+1, t.Description, t.Splits.Len())
 	}
-	for j, at := range acc.AccountTransactionList {
-		fmt.Printf("%02d) %s %s %5.2f %7.2f %7.0f\n",
-			j+1,
-			at.Transaction.DatePosted.Format("2006-01-02"),
-			StringPad(at.Description(), 65, "."),
-			at.PlusValue.Float64(),
-			at.MinusValue.Float64(),
-			at.Balance.Float64(),
-		)
-	}
+	//book.Accounts.PrintTree("   ")
 
 }

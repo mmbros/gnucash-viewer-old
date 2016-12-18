@@ -1,4 +1,4 @@
-package numeric
+package types
 
 import "strconv"
 

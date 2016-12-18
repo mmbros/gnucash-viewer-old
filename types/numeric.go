@@ -1,7 +1,8 @@
 // Package numeric defines the Numeric type.
-package numeric
+package types
 
 import (
+	"encoding/xml"
 	"fmt"
 	"strconv"
 	"strings"
@@ -20,7 +21,7 @@ type Numeric struct {
 }
 
 // String returns the string representation of Numeric value.
-func (n *Numeric) String() string {
+func (n Numeric) String() string {
 	switch n.den {
 	case 0: // den == 0
 		return "0"
@@ -170,9 +171,23 @@ func Neg(x *Numeric) *Numeric {
 }
 
 // Float64 converts the Numeric to a float64 value.
-func (z *Numeric) Float64() float64 {
-	if z.IsZero() {
+func (n *Numeric) Float64() float64 {
+	if n.IsZero() {
 		return 0.0
 	}
-	return float64(z.num) / float64(z.den)
+	return float64(n.num) / float64(n.den)
+}
+
+// UnmarshalXML implements xml.Unmarshaler interface
+func (n *Numeric) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	// http://stackoverflow.com/questions/17301149/golang-xml-unmarshal-and-time-time-fields
+	var v string
+	d.DecodeElement(&v, &start)
+	x, err := FromString(v)
+	if err != nil {
+		return err
+	}
+	n.Copy(x)
+
+	return nil
 }
